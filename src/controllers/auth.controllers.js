@@ -39,7 +39,44 @@ const signIn = (req, res) => {
     }
 }
 
+const loginWithFacebook = async (req, res) => {
+    // console.log(req.body);
+    try {
+        const { email, name, picture, userID } = req.body;
+        // console.log(req.body);
+        // console.log(email, name, picture.data.url);
+        console.log(req.body);
+        const user = await getUserByEmailServices(email);
+        if (user) {
+            const token = createToken({
+                user_id: user.user_id,
+                full_name: user.full_name,
+                email: user.email
+            });
+            res.status(200).send(token);
+        } else {
+            await createUserService({
+                email,
+                full_name: name,
+                face_app_id: userID,
+                // avatar: picture.data.url
+            });
+            let user = await getUserByEmailServices(email);
+            const token = createToken({
+                user_id: user.user_id,
+                full_name: user.full_name,
+                email: user.email
+            });
+            console.log(token)
+            res.status(200).send(token);
+        }
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
+
 export {
     signUp,
     signIn,
+    loginWithFacebook,
 }
